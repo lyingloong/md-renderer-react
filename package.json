@@ -1,0 +1,35 @@
+{
+  "name": "md-renderer-react",
+  "version": "1.0.0",
+  "description": "A flexible Markdown renderer supporting React",
+  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./src/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1", 
+    "build": "echo \"No build step needed for ES modules\""
+  },
+  "keywords": [
+    "markdown",
+    "renderer",
+    "react"
+  ],
+  "author": "lyingloong",
+  "license": "MIT",
+  "dependencies": {
+    "ef.js": "^0.17.4",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
