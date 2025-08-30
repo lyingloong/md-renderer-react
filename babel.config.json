@@ -1,0 +1,12 @@
+{
+  "presets": [
+    ["@babel/preset-react", { "runtime": "automatic" }],
+    ["@babel/preset-env", { 
+      "modules": "commonjs",
+      "targets": { "node": "14" },
+      "useBuiltIns": "usage",
+      "corejs": 3
+    }]
+  ],
+  "plugins": ["@babel/plugin-syntax-top-level-await"]
+}
