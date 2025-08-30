@@ -25,7 +25,7 @@ export default class MDRenderer {
   }
 
   /**
-   * 核心方法：渲染MD内容到指定容器
+   * 渲染MD内容到指定容器
    * @param {HTMLElement} container - 外部提供的渲染容器（必需）
    * @param {string} mdContent - 需要渲染的MD文本内容（必需）
    */
@@ -77,6 +77,40 @@ export default class MDRenderer {
       // 统一错误处理
       this._renderError(container, err.message);
       this.onError(err);
+    }
+  }
+
+  /**
+   * 不依赖 DOM 容器，直接返回 MD 渲染后的字符串代码（React 元素对应的 HTML/JSX 字符串）
+   * @param {string} mdContent - 需要处理的 MD 文本
+   * @returns {Promise<Object>} { success: boolean, data: string } - data 是渲染后的字符串代码
+   */
+  async getRenderedCode(mdContent) {
+    try {
+      // 1. 解析 MD 为 AST
+      const astResult = await this._parseMdToAst(mdContent);
+      if (astResult.isError) {
+        this.onError(new Error(astResult.data));
+        return { success: false, data: astResult.data };
+      }
+      const ast = astResult.data;
+
+      // 2. 生成 React 元素
+      const reactElement = <ASTRenderer_React ast={ast} />;
+
+      // 3. 转成字符串形式的代码
+      // renderToStaticMarkup：生成无 React 属性（如 data-reactid）的纯 HTML/JSX 字符串
+      const renderedCode = ReactDOMServer.renderToStaticMarkup(reactElement);
+
+      // 4. 触发成功回调（可选）
+      this.onSuccess({ ast, renderedCode });
+
+      return { success: true, data: renderedCode };
+
+    } catch (err) {
+      const errMsg = `获取渲染代码失败: ${err.message}`;
+      this.onError(new Error(errMsg));
+      return { success: false, data: errMsg };
     }
   }
 

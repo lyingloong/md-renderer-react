@@ -1,6 +1,6 @@
 # md-renderer-react
 
-A React-based Markdown renderer.
+A React-based Markdown renderer with dual capabilities: render Markdown to live DOM elements (for browser display) and generate static React component code strings (for offline use/export). It leverages WebAssembly for fast Markdown-to-AST parsing and supports common Markdown syntax (including code highlighting and math formulas).
 
 ## Quick Start
 
@@ -14,36 +14,80 @@ npm install
 
 ### Example
 
-```javascript
-import mdRenderer from 'md-renderer-react';
+Render Markdown content directly into a browser DOM container with loading/error states:
 
-// 1. 获取外部容器和MD内容
-const renderContainer = document.getElementById('md-container');
-const mdContent = `# 测试MD
-- 列表项1
-- 列表项2
+```javascript
+import { mdRenderer } from 'md-renderer-react';
+
+// Step 1: Prepare container and Markdown content
+const renderContainer = document.getElementById('md-container'); // DOM element to hold output
+const mdContent = `# Markdown Demo
+- **Unordered List Item** (bold text)
+- _Italic List Item_
+- Inline math: $E=mc^2$
+
 \`\`\`javascript
-console.log('代码块');
+// Code block with syntax highlighting
+console.log('Hello from md-renderer-react!');
 \`\`\`
+
+Display math:
+$$\int_0^\infty e^{-x}dx = 1$$
 `;
 
-// 2. 调用渲染（带回调）
+// Step 2: Call render with callbacks
 mdRenderer.render(renderContainer, mdContent, {
   onLoading: (container) => {
-    // 加载中状态：显示loading
-    container.innerHTML = '<div style="padding: 16px; color: #666;">MD加载中...</div>';
+    // Show loading state
+    container.innerHTML = '<div style="padding: 16px; color: #666;">Rendering Markdown...</div>';
   },
   onSuccess: ({ container, ast }) => {
-    console.log('渲染成功！AST:', ast);
+    console.log('Render success! AST structure:', ast);
   },
   onError: (err) => {
-    console.error('渲染失败:', err);
+    console.error('Render failed:', err);
+    renderContainer.innerHTML = `<div style="color: red; padding: 16px;">Error: ${err.message}</div>`;
   }
 });
 
-// 3. 页面卸载时销毁
+// Step 3: Clean up on page unload (prevent memory leaks)
 window.addEventListener('beforeunload', () => {
-  mdRenderer.destroy(renderContainer);
+  mdRenderer.destroy(renderContainer); // Unmount React instance
+});
+```
+
+Generate a string of React component code from Markdown (for export/saving—no browser DOM required):
+
+```javascript
+import { mdRenderer } from 'md-renderer-react';
+
+const mdContent = `# Generated React Component
+This Markdown will become a reusable React component.
+- No DOM container needed
+- Includes syntax highlighting
+`;
+
+// Generate React component code (returns a promise)
+mdRenderer.getReactComponentCode(mdContent, {
+  componentName: 'MyGeneratedMD' // Custom component name (default: "MDComponent")
+}).then(result => {
+  if (result.success) {
+    console.log('Generated React Component Code:\n', result.data);
+    // Example output (result.data):
+    // import React from 'react';
+    // import './index.css';
+    // export default function MyGeneratedMD() {
+    //   return (
+    //     <div className="react-rendered-content">
+    //       <h1>Generated React Component</h1>
+    //       <p>This Markdown will become a reusable React component.</p>
+    //       <ul><li>No DOM container needed</li><li>Includes syntax highlighting</li></ul>
+    //     </div>
+    //   );
+    // }
+  } else {
+    console.error('Code generation failed:', result.data);
+  }
 });
 ```
 
