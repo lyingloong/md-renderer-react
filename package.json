@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A flexible Markdown renderer supporting React",
   "main": "dist/index.js",
-  "type": "module",
   "exports": {
     ".": "./index.js",
     "./src/*": "./src/*"
@@ -25,7 +24,8 @@
     "highlight.js": "^11.11.1",
     "katex": "^0.16.21",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@bjorn3/browser_wasi_shim": "^0.4.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.3",

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import ReactDOMServer from 'react-dom/server'; 
 import { ASTRenderer_React } from './renderer/md-renderer.js';
 import { ensureLines, sleep } from './utils/helper.js';
 
@@ -121,33 +122,37 @@ export default class MDRenderer {
    */
   async _parseMdToAst(mdContent) {
     try {
-      // 等待解析器加载完成
-      const { default: analyserExports } = await analyserImport;
-      const { parse, problems } = analyserExports;
-
-      // 确保MD内容以换行结尾（兼容解析器要求）
+      // 若已初始化 WASM 实例，直接复用
+      if (!this.wasmInstance) {
+        // 等待动态导入 analyser.js 完成
+        const analyser = await analyserImport;
+        // 调用 initWASM 函数初始化 WASM（关键修改）
+        this.wasmInstance = await analyser.initWASM();
+        // 验证实例是否包含 parse 方法（兼容原逻辑）
+        if (typeof this.wasmInstance.parse !== 'function') {
+          throw new Error('WASM 实例缺少 parse 方法（初始化异常）');
+        }
+      }
+      const { parse, problems } = this.wasmInstance; // 从缓存实例中取方法
       const formattedContent = ensureLines(mdContent);
       
-      // 调用wasm的parse方法（模拟延迟，避免UI阻塞）
-      const gap = sleep(100); // 可根据需求调整延迟时间
+      const gap = sleep(100);
       const [_, parseResult] = await Promise.allSettled([gap, parse(formattedContent)]);
 
-      // 处理解析结果（wasm返回的可能是错误字符串或AST）
       if (parseResult.status !== 'fulfilled') {
         return { isError: true, data: parseResult.reason.message || '解析器执行失败' };
       }
 
       const rawData = parseResult.value;
-      // 识别解析错误（假设错误以"stdin"开头，如原代码逻辑）
       if (typeof rawData === 'string' && rawData.startsWith('"stdin"')) {
         return { isError: true, data: rawData };
       }
 
-      // 解析成功：返回AST（假设rawData是JSON字符串，原代码逻辑）
       const ast = JSON.parse(rawData);
       return { isError: false, data: ast };
 
     } catch (err) {
+      this.wasmInstance = null;
       return { isError: true, data: `解析过程出错: ${err.message}` };
     }
   }
@@ -215,6 +220,7 @@ export default class MDRenderer {
       this.reactRoots.forEach((reactRoot) => reactRoot.unmount());
       this.reactRoots.clear();
     }
+    this.wasmInstance = null;
   }
 }
 
