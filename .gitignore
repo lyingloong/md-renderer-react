@@ -4,6 +4,7 @@ node_modules/
 
 /dist/*
 !/dist/ghc_wasm_jsffi.js
+!/dist/wizer.wasm
 
 .vscode/
 .idea/

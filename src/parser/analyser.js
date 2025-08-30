@@ -29,7 +29,8 @@ export const initWASM = async () => {
   const instance_exports = {};
   const ffi = await loadFFIModule();
 
-  await WebAssembly.compileStreaming( fetch("https://igem.erchius.xin/markdown/wizer.wasm") )
+  const wasmFileUrl = new URL('../../wizer.wasm', import.meta.url);
+  await WebAssembly.compileStreaming( fetch(wasmFileUrl) )
       .then( wasm => WebAssembly.instantiate(
           wasm,
           {
