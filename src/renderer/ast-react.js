@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';
 import katex from 'katex';
-import 'katex/dist/katex.min.css';
 
 // 代码高亮组件
 const CodeLine = ({ line }) => {
