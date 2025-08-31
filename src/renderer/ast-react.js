@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import hljs from 'highlight.js';
 import katex from 'katex';
 
-// 代码高亮组件
 const CodeLine = ({ line }) => {
   return (
     <p className="code" dangerouslySetInnerHTML={{ __html: line }} />
   );
 };
 
-// 强调样式组件 (斜体、粗体等)
 const Emphasis = ({ type, content }) => {
   const Tag = type === 'italic' ? 'i' : 
               type === 'bold' ? 'b' : 
@@ -22,22 +20,17 @@ const Emphasis = ({ type, content }) => {
   );
 };
 
-// 数学公式组件
 const MathComponent = ({ mode, expression }) => {
-  const [renderedMath, setRenderedMath] = useState('');
-  
-  useEffect(() => {
-    try {
-      const html = katex.renderToString(expression, {
-        displayMode: mode === 'display',
-        throwOnError: false
-      });
-      setRenderedMath(html);
-    } catch (e) {
-      console.error('KaTeX渲染错误:', e);
-      setRenderedMath(expression);
-    }
-  }, [expression, mode]);
+  let renderedMath;
+  try {
+    renderedMath = katex.renderToString(expression, {
+      displayMode: mode === 'display',
+      throwOnError: false
+    });
+  } catch (e) {
+    console.error('KaTeX渲染错误:', e);
+    renderedMath = expression;
+  }
   
   return (
     <span 
@@ -47,26 +40,23 @@ const MathComponent = ({ mode, expression }) => {
   );
 };
 
-// 代码块组件
 const CodeBlock = ({ code, language, lineno }) => {
-  const [highlightedCode, setHighlightedCode] = useState([]);
+  const highlighter = language 
+    ? () => hljs.highlight(code, { language, ignoreIllegals: true }).value
+    : () => hljs.highlightAuto(code).value;
   
-  useEffect(() => {
-    const highlighter = language 
-      ? () => hljs.highlight(code, { language, ignoreIllegals: true }).value
-      : () => hljs.highlightAuto(code).value;
-    
-    const html = highlighter();
-    const lines = html.trimEnd().split(/\n/g);
-    setHighlightedCode(lines);
-  }, [code, language]);
-  
+  const highlightedHtml = highlighter();
+  const highlightedCode = highlightedHtml.trimEnd().split(/\n/g);
+
   return (
     <pre 
       className="code" 
       style={{ counterReset: `line-number ${lineno ?? 0}` }}
     >
+      {/* 显示代码语言（自动识别时显示 'auto'） */}
       <p className="language">{language || 'auto'}</p>
+      
+      {/* 遍历单行高亮代码，渲染每一行（通过 CodeLine 组件） */}
       {highlightedCode.map((line, index) => (
         <CodeLine key={index} line={line} />
       ))}
@@ -74,15 +64,12 @@ const CodeBlock = ({ code, language, lineno }) => {
   );
 };
 
-// 基础文本组件
 const PlainText = ({ text }) => <span className="plain md">{text}</span>;
 
-// 段落组件
 const Paragraph = ({ content }) => (
   <p className="md">{content}</p>
 );
 
-// 图片组件
 const Figure = ({ caption, path }) => (
   <p className="md">
     <img className="md" src={path} alt={caption} />
@@ -90,21 +77,18 @@ const Figure = ({ caption, path }) => (
   </p>
 );
 
-// 链接组件
 const Link = ({ text, src }) => (
   <a className="md" href={src} target="_blank" rel="noopener noreferrer">
     {text}
   </a>
 );
 
-// 列表组件（区分无序列表和有序列表）
 const List = ({ type, content }) => {
   // 无序列表用<ul>，有序列表用<ol>
   const Tag = type === 'itemization' ? 'ul' : 'ol';
   return <Tag className={type}>{content}</Tag>;
 };
 
-// 普通列表项
 const NormalItem = ({ title, content }) => (
   <li>
     <p className="item md">{title}</p>
@@ -112,14 +96,12 @@ const NormalItem = ({ title, content }) => (
   </li>
 );
 
-// 普通文本项
 const PlainItem = ({ content }) => (
   <li className="plain">
     <div className="item">{content}</div>
   </li>
 );
 
-// 章节组件
 const Section = ({ title, content, time }) => (
   <section className="section">
     <div className="title">
@@ -132,10 +114,9 @@ const Section = ({ title, content, time }) => (
   </section>
 );
 
-// 主转换函数
 export function ASTnode2DOM_React(ASTnode) {
+  // console.log("[ASTnode2DOM_React] ASTnode", ASTnode);
   if (!ASTnode) return null;
-  console.log(ASTnode);
 
   // 辅助函数：处理 content
   const renderContent = (content) => {
@@ -161,7 +142,7 @@ export function ASTnode2DOM_React(ASTnode) {
     case "section":
       return (
         <Section 
-          title={ASTnode2DOM_React(ASTnode.title)} 
+          title={renderContent(ASTnode.title)} 
           content={renderContent(ASTnode.content)}
           time={ASTnode.date} 
         />

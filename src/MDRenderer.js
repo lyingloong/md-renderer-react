@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 import { ASTRenderer_React } from './renderer/md-renderer.js';
 import { ensureLines, sleep } from './utils/helper.js';
 
-const analyserImport = import('./parser/analyser.js');
+import { parseMarkdownToAST } from './parser/analyser.js';
 
 export default class MDRenderer {
   /**
@@ -52,8 +52,8 @@ export default class MDRenderer {
       // 1. 触发加载中回调
       this.onLoading(container);
 
-      // 2. 解析MD内容为AST（调用analyser.wasm）
-      const astResult = await this._parseMdToAst(mdContent);
+      // 2. 解析MD内容为AST
+      const astResult = parseMarkdownToAST(mdContent);
       if (this.isDestroyed) return; // 若已销毁，终止流程
 
       // 3. 处理解析结果（区分错误和正常AST）
@@ -89,12 +89,7 @@ export default class MDRenderer {
   async getRenderedCode(mdContent) {
     try {
       // 1. 解析 MD 为 AST
-      const astResult = await this._parseMdToAst(mdContent);
-      if (astResult.isError) {
-        this.onError(new Error(astResult.data));
-        return { success: false, data: astResult.data };
-      }
-      const ast = astResult.data;
+      const ast = await parseMarkdownToAST(mdContent);
 
       // 2. 生成 React 元素
       const reactElement = <ASTRenderer_React ast={ast} />;
