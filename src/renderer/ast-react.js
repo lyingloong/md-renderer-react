@@ -64,6 +64,42 @@ const CodeBlock = ({ code, language, lineno }) => {
   );
 };
 
+const Table = ({ header, rows }) => (
+  <table className="md table">
+    <thead>
+      <tr>
+        {header.map((cell, idx) => (
+          <TableCell key={idx} {...cell} isHeader={true} />
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row, rIdx) => (
+        <tr key={rIdx}>
+          {row.map((cell, cIdx) => (
+            <TableCell key={cIdx} {...cell} />
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
+const TableCell = ({ align, content, isHeader }) => {
+  const Tag = isHeader ? 'th' : 'td';
+  return (
+    <Tag className={`md table-cell align-${align}`}>
+      {Array.isArray(content)
+        ? content.map((item, index) => (
+            <React.Fragment key={index}>
+              {ASTnode2DOM_React(item)}
+            </React.Fragment>
+          ))
+        : ASTnode2DOM_React(content)}
+    </Tag>
+  );
+};
+
 const PlainText = ({ text }) => <span className="plain md">{text}</span>;
 
 const Paragraph = ({ content }) => (
@@ -212,6 +248,14 @@ export function ASTnode2DOM_React(ASTnode) {
           code={ASTnode.content}  // 代码块 content 是字符串，直接传
           language={ASTnode.language} 
           lineno={ASTnode["line-number"]} 
+        />
+      );
+
+    case "table":
+      return (
+        <Table 
+          header={ASTnode.header || []} 
+          rows={ASTnode.rows || []} 
         />
       );
       

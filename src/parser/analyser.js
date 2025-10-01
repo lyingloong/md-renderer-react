@@ -209,6 +209,64 @@ function parseList(lines, i, baseLevel, ordered = false) {
   return [{ type: listType, items }, i];
 }
 
+/** 解析表格：| ... | */
+function parseTable(lines, i) {
+  const headerLine = lines[i];
+  const alignLine = lines[i + 1];
+
+  // 表头行必须以 | 开始
+  if (!/^\s*\|.*\|\s*$/.test(headerLine)) {
+    return [null, i + 1];
+  }
+
+  // 对齐行必须至少有一个 ---（且也是以 | 包围）
+  if (!alignLine || !/^\s*\|.*-.*\|\s*$/.test(alignLine)) {
+    return [null, i + 1];
+  }
+
+  // 拆分单元格
+  const splitRow = (line) =>
+    line
+      .trim()
+      .replace(/^\||\|$/g, '') // 去掉两端的 |
+      .split('|')
+      .map((s) => s.trim());
+
+  const headers = splitRow(headerLine);
+  const aligns = splitRow(alignLine).map((s) => {
+    if (/^:-+:$/.test(s)) return 'center';
+    if (/^:-+$/.test(s)) return 'left';
+    if (/^-+:$/.test(s)) return 'right';
+    return 'left';
+  });
+
+  const rows = [];
+  let j = i + 2;
+  while (j < lines.length && /^\s*\|.*\|\s*$/.test(lines[j])) {
+    rows.push(splitRow(lines[j]));
+    j++;
+  }
+
+  // 构建 AST 节点
+  const node = {
+    type: 'table',
+    header: headers.map((h, idx) => ({
+      type: 'table-cell',
+      align: aligns[idx] || 'left',
+      content: parseInline(h),
+    })),
+    rows: rows.map((r) =>
+      r.map((cell, idx) => ({
+        type: 'table-cell',
+        align: aligns[idx] || 'left',
+        content: parseInline(cell),
+      }))
+    ),
+  };
+
+  return [node, j];
+}
+
 /** 主解析：逐行扫描、组装 section 树 */
 export function parseMarkdownToAST(mdContent) {
   const lines = LF(mdContent).split('\n');
@@ -252,6 +310,16 @@ export function parseMarkdownToAST(mdContent) {
       push(node);
       i = ni;
       continue;
+    }
+
+    // ===== 表格：至少两行，第一行 |...|，第二行 ---
+    if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|.*-.*\|\s*$/.test(lines[i + 1])) {
+      const [node, ni] = parseTable(lines, i);
+      if (node) {
+        push(node);
+        i = ni;
+        continue;
+      }
     }
 
     // ===== 围栏代码块：```lang[=lineno]

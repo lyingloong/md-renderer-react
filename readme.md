@@ -210,6 +210,7 @@ export function MDComponent({ mdContent }) {
 | Unordered Lists | `- Item 1`, `- Subitem` (nested)     | `<ul>` + `<li>`               |
 | Ordered Lists   | `1. Item 1`, `2. Item 2`             | `<ol>` + `<li>`               |
 | Code Blocks     | `javascript console.log()`           | Highlighted `<pre>` block     |
+| Tables          | `| a | b |\n| ---- | ---: |`         | <table> with <thead> <tbody>  |
 | Math (Inline)   | `$E=mc^2$`                           | Inline KaTeX formula          |
 | Math (Display)  | `$$\int_0^\infty e^{-x}dx$$`         | Block KaTeX formula           |
 | Images          | `![Alt Text](path/to/img.jpg)`       | `<img>` with caption          |
