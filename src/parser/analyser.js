@@ -132,14 +132,14 @@ function parseList(lines, i, baseLevel, ordered = false) {
     const titleText = m[1];
     const contentLines = [];
 
-    // 吸收属于此项的后续行（比当前项更深的缩进，或者空行）
+    // 吸收属于此项的后续行
     while (j < lines.length) {
       const l2 = lines[j];
       if (!l2.trim()) { contentLines.push(''); j++; continue; }
       const lvl2 = tabs(l2);
       // 同级下一个 + 列表项，停止
       if (/^[ \t]*\+\s+/.test(l2) && lvl2 === baseLevel) break;
-      if (lvl2 <= baseLevel) break;
+      if (lvl2 < baseLevel) break;
       contentLines.push(lines[j]);
       j++;
     }
@@ -189,19 +189,13 @@ function parseList(lines, i, baseLevel, ordered = false) {
       }
     }
 
-    // 只有一段内容且无子块 → plain-item
-    if (blocks.length === 1 && blocks[0].type === 'paragraph') {
-      items.push({
-        type: 'plain-item',
-        content: blocks[0].content
-      });
-    } else {
-      items.push({
-        type: 'normal-item',
-        title: { type: 'plain', content: titleText },
-        content: blocks
-      });
-    }
+    const parsedTitle = parseInline(titleText);
+
+    items.push({
+      type: 'normal-item',
+      title: parsedTitle.length === 1 ? parsedTitle[0] : { type: 'span', content: parsedTitle },
+      content: blocks
+    });
 
     i = j;
   }

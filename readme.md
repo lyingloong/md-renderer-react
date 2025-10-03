@@ -207,8 +207,7 @@ export function MDComponent({ mdContent }) {
 | --------------- | ------------------------------------ | ----------------------------- |
 | Headings        | `# H1`, `## H2`                      | Semantic `<section>` + `<h2>` |
 | Text Styles     | `**bold**`, `_italic_`, `underlined` | `<b>`, `<i>`, `<u>` tags      |
-| Unordered Lists | `- Item 1`, `- Subitem` (nested)     | `<ul>` + `<li>`               |
-| Ordered Lists   | `1. Item 1`, `2. Item 2`             | `<ol>` + `<li>`               |
+| Unordered Lists | `- Item 1`, `- Subitem` (nested)     | `<ul>` + `<li>`               |          |
 | Code Blocks     | `javascript console.log()`           | Highlighted `<pre>` block     |
 | Tables          | `| a | b |\n| ---- | ---: |`         | <table> with <thead> <tbody>  |
 | Math (Inline)   | `$E=mc^2$`                           | Inline KaTeX formula          |
