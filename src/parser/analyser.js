@@ -140,6 +140,7 @@ function parseList(lines, i, baseLevel, ordered = false) {
       // 同级下一个 + 列表项，停止
       if (/^[ \t]*\+\s+/.test(l2) && lvl2 === baseLevel) break;
       if (lvl2 < baseLevel) break;
+      if (lvl2 === baseLevel && baseLevel == 0 && !/^[ \t]*\+/.test(l2)) break;    // 同级但不是列表项 → 说明是外部内容
       contentLines.push(lines[j]);
       j++;
     }
