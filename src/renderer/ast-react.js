@@ -212,7 +212,7 @@ export function ASTnode2DOM_React(ASTnode) {
     case "figure":
       return (
         <Figure 
-          caption={ASTnode2DOM_React(ASTnode.caption)} 
+          caption={ASTnode.caption.content} 
           path={ASTnode.path} 
         />
       );
