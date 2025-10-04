@@ -205,6 +205,54 @@ function parseList(lines, i, baseLevel, ordered = false) {
 }
 
 /** 解析表格：| ... | */
+function splitRowSafe(line) {
+  line = line.trim().replace(/^\||\|$/g, '');
+
+  const cells = [];
+  let cur = '';
+  let inCode = false;
+  let inMath = false;
+  let escape = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+
+    if (escape) {
+      cur += ch;
+      escape = false;
+      continue;
+    }
+
+    if (ch === '\\') {
+      escape = true;
+      continue;
+    }
+
+    if (ch === '`') {
+      inCode = !inCode;
+      cur += ch;
+      continue;
+    }
+
+    if (ch === '$' && !inCode) {
+      inMath = !inMath;
+      cur += ch;
+      continue;
+    }
+
+    if (ch === '|' && !inCode && !inMath) {
+      cells.push(cur.trim());
+      cur = '';
+      continue;
+    }
+
+    cur += ch;
+  }
+
+  if (cur.length) cells.push(cur.trim());
+  return cells;
+}
+
 function parseTable(lines, i) {
   const headerLine = lines[i];
   const alignLine = lines[i + 1];
@@ -219,16 +267,8 @@ function parseTable(lines, i) {
     return [null, i + 1];
   }
 
-  // 拆分单元格
-  const splitRow = (line) =>
-    line
-      .trim()
-      .replace(/^\||\|$/g, '') // 去掉两端的 |
-      .split('|')
-      .map((s) => s.trim());
-
-  const headers = splitRow(headerLine);
-  const aligns = splitRow(alignLine).map((s) => {
+  const headers = splitRowSafe(headerLine);
+  const aligns = splitRowSafe(alignLine).map((s) => {
     if (/^:-+:$/.test(s)) return 'center';
     if (/^:-+$/.test(s)) return 'left';
     if (/^-+:$/.test(s)) return 'right';
@@ -238,7 +278,7 @@ function parseTable(lines, i) {
   const rows = [];
   let j = i + 2;
   while (j < lines.length && /^\s*\|.*\|\s*$/.test(lines[j])) {
-    rows.push(splitRow(lines[j]));
+    rows.push(splitRowSafe(lines[j]));
     j++;
   }
 
