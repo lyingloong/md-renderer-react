@@ -4,7 +4,7 @@ import { ASTRenderer_React } from './renderer/md-renderer.js';
 import { ASTnode2DOM_React } from './renderer/ast-react.js';
 
 import * as helperUtils from './utils/helper.js';
-import * as parser from './parser/analyser.js';
+import * as parser from './parser/parser.js';
 
 export {
   MDRenderer,  // 渲染器类
