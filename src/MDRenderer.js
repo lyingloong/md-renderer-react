@@ -4,19 +4,21 @@ import ReactDOMServer from 'react-dom/server';
 import { ASTRenderer_React } from './renderer/md-renderer.js';
 import { ensureLines, sleep } from './utils/helper.js';
 
-import { parseMarkdownToAST } from './parser/analyser.js';
+import { parseMarkdownToAST } from './parser/parser.js';
 
 export default class MDRenderer {
   /**
    * 构造函数：初始化渲染器
    * @param {Object} options - 配置项
    * @param {string} [options.mode='react'] - 渲染模式（目前仅支持react）
+   * @param {Object} [options.styles] - 自定义样式对象(scss)
    * @param {Function} [options.onLoading] - 加载中回调
    * @param {Function} [options.onSuccess] - 渲染成功回调
    * @param {Function} [options.onError] - 渲染失败回调
    */
   constructor(options = {}) {
     this.mode = options.mode || 'react'; // 目前仅支持React，预留扩展
+    this.styles = options.styles ?? {};
     this.onLoading = options.onLoading || (() => {});
     this.onSuccess = options.onSuccess || (() => {});
     this.onError = options.onError || ((err) => console.error('渲染失败:', err));
@@ -52,7 +54,7 @@ export default class MDRenderer {
         ast = [];
       }
 
-    const reactElement = <ASTRenderer_React ast={ast} />;
+    const reactElement = <ASTRenderer_React ast={ast} styles={this.styles}/>;
     this.onSuccess?.({ ast, reactElement });
     return reactElement;
 
@@ -130,7 +132,7 @@ export default class MDRenderer {
       const ast = await parseMarkdownToAST(mdContent);
 
       // 2. 生成 React 元素
-      const reactElement = <ASTRenderer_React ast={ast} />;
+      const reactElement = <ASTRenderer_React ast={ast} styles={this.styles}/>;
 
       // 3. 转成字符串形式的代码
       // renderToStaticMarkup：生成无 React 属性（如 data-reactid）的纯 HTML/JSX 字符串
@@ -205,7 +207,7 @@ export default class MDRenderer {
     // 渲染React组件（使用ASTRenderer_React处理AST）
     reactRoot.render(
       <React.StrictMode>
-        <ASTRenderer_React ast={ast} />
+        <ASTRenderer_React ast={ast} styles={this.styles}/>
       </React.StrictMode>
     );
   }
