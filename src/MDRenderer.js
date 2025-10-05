@@ -26,11 +26,49 @@ export default class MDRenderer {
   }
 
   /**
+   * 生成 React 元素，不依赖 DOM 容器
+   * @param {string} mdContent - MD 文本
+   * @returns {Promise<React.Element>} React 元素（ASTRenderer_React包裹AST）
+   */
+  async renderToElement(mdContent) {
+    if (this.isDestroyed) {
+      throw new Error('渲染器已销毁，无法使用 renderToElement');
+    }
+
+    if (typeof mdContent !== 'string') {
+      throw new Error('mdContent 必须是字符串');
+    }
+
+    try {
+      const astResult = await parseMarkdownToAST(mdContent);
+
+      let ast = null;
+      if (Array.isArray(astResult)) {
+        ast = astResult;
+      } else if (astResult && astResult.data) {
+        ast = astResult.data;
+      } else {
+        console.warn("[renderToElement] 未识别的 astResult 结构:", astResult);
+        ast = [];
+      }
+
+    const reactElement = <ASTRenderer_React ast={ast} />;
+    this.onSuccess?.({ ast, reactElement });
+    return reactElement;
+
+    } catch (err) {
+      this.onError(err);
+      return <div style={{ color: 'red' }}>error: {err.message}</div>;
+    }
+  }
+
+
+  /**
    * 渲染MD内容到指定容器
    * @param {HTMLElement} container - 外部提供的渲染容器（必需）
    * @param {string} mdContent - 需要渲染的MD文本内容（必需）
    */
-  async render(container, mdContent) {
+  async renderToContainer(container, mdContent) {
     // 校验参数合法性
     if (!container || !(container instanceof HTMLElement)) {
       const err = new Error('必须传入有效的DOM容器');
