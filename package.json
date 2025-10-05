@@ -1,5 +1,6 @@
 {
   "name": "webpack-igemd-loader",
+  "type": "module",
   "scripts": {
     "build:submodule": "npm install --prefix ./md-renderer-react && npm run build --prefix ./md-renderer-react",
     "start:demo": "npm run build:submodule && webpack serve --config webpack.config.js",

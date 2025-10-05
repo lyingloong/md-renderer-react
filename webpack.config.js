@@ -1,11 +1,13 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const path = require('path');
+// const HtmlWebpackPlugin = require('html-webpack-plugin');
+import path from "path";
+import HtmlWebpackPlugin from "html-webpack-plugin";
 
-module.exports = {
+export default {
   mode: 'development',
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: new URL('./dist', import.meta.url).pathname,
     filename: 'bundle.js',
   },
   plugins: [
@@ -30,7 +32,7 @@ module.exports = {
             },
           },
           {
-            loader: path.resolve(__dirname, 'local-md-loader.js'),
+            loader: new URL('./local-md-loader.js', import.meta.url).pathname,
             options: {
               cssPath: '../styles/ContentPageLayout.module.scss'
             }
@@ -48,7 +50,7 @@ module.exports = {
       // 规则3：处理主项目 JS/JSX
       {
         test: /\.(js|jsx)$/,
-        include: path.resolve(__dirname, "src"),
+        include: new URL("./src", import.meta.url).pathname,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -80,13 +82,13 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.md'],
     alias: {
-      react: path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+      react: new URL("./node_modules/react", import.meta.url).pathname,
+      "react-dom": new URL("./node_modules/react-dom", import.meta.url).pathname,
     },
   },
   devServer: {
-    static: path.resolve(__dirname, 'dist'),
-    port: 3220,
+    static: new URL('./dist', import.meta.url).pathname,
+    port: 3230,
     hot: true,
     open: false,
     client: {
