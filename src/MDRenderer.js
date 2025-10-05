@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 import { ASTRenderer_React } from './renderer/md-renderer.js';
 import { ensureLines, sleep } from './utils/helper.js';
 
-import { parseMarkdownToAST } from './parser/parser.js';
+import { parseMarkdownToAST } from './parser/analyser.js';
 
 export default class MDRenderer {
   /**

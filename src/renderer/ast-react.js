@@ -100,14 +100,14 @@ const PlainText = ({ text, styles }) => (
 );
 
 const Paragraph = ({ content, styles }) => (
-  <p className={styles.paragraph ?? 'md'}>{content}</p>
+  <div className={styles.paragraph ?? 'md'}>{content}</div>
 );
 
 const Figure = ({ caption, path, styles }) => (
-  <p className={styles.md ?? 'md'}>
+  <figure className={styles.md ?? 'md'}>
     <img className={styles.md ?? 'md'} src={path} alt={caption} />
-    <p className={styles.caption ?? 'caption md'}>{caption}</p>
-  </p>
+    <figcaption className={styles.caption ?? 'caption md'}>{caption}</figcaption>
+  </figure>
 );
 
 const Link = ({ text, src, styles }) => (

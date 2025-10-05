@@ -1,21 +1,24 @@
-const LF = (s) => s.replace(/\r\n?/g, '\n');
+const LF = (s) => s.replace(/\r?\n/g, '\n');
 
 /** --------- 行内解析：返回 [inline nodes...] --------- */
 function parseInline(text) {
+  console.log("[parseInline] text:", text);
   const out = [];
   const pushPlain = (s) => { if (s) out.push({ type: 'plain', content: s }); };
 
   // 统一处理转义：只处理 \[, \], \$，其余保留
   // 注：不要全局清理反斜杠，避免破坏 LaTeX
-  const tokenRe = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|(?<!\\)\$([^$]+)\$|\^([^*]+)\^|\*([^*]+)\*|__([^_]+)__|_([^_]+)_|\^([^^]+)\^|```([\s\S]+?)```|`([^`]+)`/g;
+  const tokenRe = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\[(.+?)\\\]|(?<!\\)\$([^$]+)\$|\^([^*]+)\^|\*([^*]+)\*|__([^_]+)__|_([^_]+)_|\^([^^]+)\^|```([\s\S]+?)```|`([^`]+)`/g;
 
 
   let last = 0, m;
   while ((m = tokenRe.exec(text)) !== null) {
     if (m.index > last) pushPlain(text.slice(last, m.index));
+    console.log("[parseInline] match:", m);
 
     if (m[1] !== undefined) {
       // image
+      // !\[([^\]]*)\]\(([^)]+)\)
       out.push({
         type: 'figure',
         path: m[2],
@@ -23,21 +26,27 @@ function parseInline(text) {
       });
     } else if (m[3] !== undefined) {
       // link（text 需为单节点，兼容你的 Link 组件）
+      // \[([^\]]+)\]\(([^)]+)\)
       out.push({
         type: 'link',
         text: { type: 'plain', content: m[3] },
         link: m[4]
       });
     } else if (m[5] !== undefined) {
-      // inline math
-      out.push({ type: 'math', mode: 'inline', content: m[5] });
+      // display math
+      // \\\[(.+?)\\\]
+      out.push({ type: 'math', mode: 'display', content: m[5] });
     } else if (m[6] !== undefined) {
-      out.push({ type: 'bold', content: parseInline(m[6]) });
-    } else if (m[7] !== undefined || m[8] !== undefined) {
-      const inner = m[7] ?? m[8];
+      // inline math
+      // (?<!\\)\$([^$]+)\$
+      out.push({ type: 'math', mode: 'inline', content: m[6] });
+    } else if (m[7] !== undefined) {
+      out.push({ type: 'bold', content: parseInline(m[7]) });
+    } else if (m[8] !== undefined || m[9] !== undefined) {
+      const inner = m[8] ?? m[9];
       out.push({ type: 'italic', content: parseInline(inner) });
-    } else if (m[9] !== undefined) {
-      out.push({ type: 'underlined', content: parseInline(m[9]) });
+    } else if (m[10] !== undefined) {
+      out.push({ type: 'underlined', content: parseInline(m[10]) });
     }
 
     last = tokenRe.lastIndex;
@@ -49,19 +58,17 @@ function parseInline(text) {
 /** --------- 块级解析工具 --------- */
 const leading = (s) => (s.match(/^[ \t]*/)?.[0] ?? '');
 const tabs = (s) => {
-  // Tab 优先；两个/四个空格也当成 1 级
+  // Tab 优先；四个空格也当成 1 级
   const m = leading(s);
   if (!m) return 0;
-  // 把前缀里的空格按 2/4 折算为 1 级
   let lvl = 0, i = 0;
   while (i < m.length) {
     if (m[i] === '\t') { lvl++; i++; continue; }
-    // 吃尽连续空格（2 或 4 都当 1 级）
-    let j = i;
-    while (j < m.length && m[j] === ' ') j++;
-    const span = j - i;
-    if (span >= 2) { lvl++; i += span; }
-    else break;
+    // 吃尽连续空格
+    if (m.substr(i, 4) === '    ') {
+      lvl++;
+      i += 4;
+    } else break;
   }
   return lvl;
 };
@@ -134,6 +141,7 @@ function parseList(lines, i, baseLevel, ordered = false) {
 
     // 吸收属于此项的后续行
     while (j < lines.length) {
+      console.log("[parseList] checking line:", lines[j]);
       const l2 = lines[j];
       if (!l2.trim()) { contentLines.push(''); j++; continue; }
       const lvl2 = tabs(l2);
@@ -144,6 +152,7 @@ function parseList(lines, i, baseLevel, ordered = false) {
       contentLines.push(lines[j]);
       j++;
     }
+    console.log("[parseList] item contentLines:", contentLines);
 
     // 拆分“子列表”和“文本内容”
     const blocks = [];
