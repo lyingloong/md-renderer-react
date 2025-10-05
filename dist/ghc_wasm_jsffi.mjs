@@ -59,7 +59,7 @@ const setImmediate = await (async () => {
 
   // deno
   try {
-    return (await import("node:timers")).setImmediate;
+    return (await import("timers")).setImmediate;
   } catch {}
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask
