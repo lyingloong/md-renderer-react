@@ -8,7 +8,7 @@ function parseInline(text) {
 
   // 统一处理转义：只处理 \[, \], \$，其余保留
   // 注：不要全局清理反斜杠，避免破坏 LaTeX
-  const tokenRe = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\[(.+?)\\\]|(?<!\\)\$([^$]+)\$|\^([^*]+)\^|\*([^*]+)\*|__([^_]+)__|_([^_]+)_|\^([^^]+)\^|```([\s\S]+?)```|`([^`]+)`/g;
+  const tokenRe = /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]+)\]\(([^)]+)\)|\\\[(.+?)\\\]|(?<!\\)\$([^$]+)\$|\^((?:[^\\^]|\\\\\^)*)\^|\*([^*]+)\*|__([^_]+)__|_([^_]+)_|\^([^^]+)\^|```([\s\S]+?)```|`([^`]+)`/g;
 
 
   let last = 0, m;
@@ -25,7 +25,7 @@ function parseInline(text) {
         caption: { type: 'plain', content: m[1] || '' }
       });
     } else if (m[3] !== undefined) {
-      // link（text 需为单节点，兼容你的 Link 组件）
+      // link
       // \[([^\]]+)\]\(([^)]+)\)
       out.push({
         type: 'link',
@@ -141,7 +141,6 @@ function parseList(lines, i, baseLevel, ordered = false) {
 
     // 吸收属于此项的后续行
     while (j < lines.length) {
-      console.log("[parseList] checking line:", lines[j]);
       const l2 = lines[j];
       if (!l2.trim()) { contentLines.push(''); j++; continue; }
       const lvl2 = tabs(l2);
@@ -152,8 +151,7 @@ function parseList(lines, i, baseLevel, ordered = false) {
       contentLines.push(lines[j]);
       j++;
     }
-    console.log("[parseList] item contentLines:", contentLines);
-
+    
     // 拆分“子列表”和“文本内容”
     const blocks = [];
     let k = 0;
