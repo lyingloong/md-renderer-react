@@ -2,6 +2,15 @@ import React from 'react';
 import hljs from 'highlight.js';
 import katex from 'katex';
 
+let idCounterSection = 0;
+let idCounterUl = 0;
+const generateUniqueId = (prefix = 'section') => {
+  if (prefix === 'section') idCounterSection += 1;
+  if (prefix === 'ul') idCounterUl += 1;
+  const id = prefix === 'section' ? idCounterSection : idCounterUl;
+  return `${prefix}-${id}`;
+};
+
 const CodeLine = ({ line, styles }) => (
   <p className={styles.code ?? 'code'} dangerouslySetInnerHTML={{ __html: line }} />
 );
@@ -123,7 +132,8 @@ const Link = ({ text, src, styles }) => (
 
 const List = ({ type, content, styles }) => {
   const Tag = type === 'itemization' ? 'ul' : 'ol';
-  return <Tag className={styles[type] ?? type}>{content}</Tag>;
+  const id = type === 'itemization' ? generateUniqueId('ul') : null;
+  return <Tag id={id} className={styles[type] ?? type}>{content}</Tag>;
 };
 
 const NormalItem = ({ title, content, styles }) => (
@@ -139,17 +149,20 @@ const PlainItem = ({ content, styles }) => (
   </li>
 );
 
-const Section = ({ title, content, time, styles }) => (
-  <section className={styles.section ?? 'section'}>
-    <div className={styles.title ?? 'title'}>
-      <h2>{title}</h2>
-      {time && <span className={styles['section-time'] ?? 'section-time'}>{time}</span>}
-    </div>
-    <div className={styles['section-content'] ?? 'section-content'}>
-      {content}
-    </div>
-  </section>
-);
+const Section = ({ title, content, time, styles }) => {
+  const id = generateUniqueId('section');
+  return (
+    <section id={id} className={styles.section ?? 'section'}>
+      <div className={styles.title ?? 'title'}>
+        <h2>{title}</h2>
+        {time && <span className={styles['section-time'] ?? 'section-time'}>{time}</span>}
+      </div>
+      <div className={styles['section-content'] ?? 'section-content'}>
+        {content}
+      </div>
+    </section>
+  );
+};
 
 export function ASTnode2DOM_React(ASTnode, styles = {}) {
   if (!ASTnode) return null;
