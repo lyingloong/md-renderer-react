@@ -2,7 +2,6 @@ const LF = (s) => s.replace(/\r?\n/g, '\n');
 
 /** --------- 行内解析：返回 [inline nodes...] --------- */
 function parseInline(text) {
-  console.log("[parseInline] text:", text);
   const out = [];
   const pushPlain = (s) => { if (s) out.push({ type: 'plain', content: s }); };
 
@@ -14,7 +13,6 @@ function parseInline(text) {
   let last = 0, m;
   while ((m = tokenRe.exec(text)) !== null) {
     if (m.index > last) pushPlain(text.slice(last, m.index));
-    console.log("[parseInline] match:", m);
 
     if (m[1] !== undefined) {
       // image

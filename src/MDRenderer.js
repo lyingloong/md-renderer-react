@@ -19,7 +19,6 @@ export default class MDRenderer {
   constructor(options = {}) {
     this.mode = options.mode || 'react'; // 目前仅支持React，预留扩展
     this.styles = options.styles ?? {};
-    // console.log("[MDRenderer] styles:", this.styles);
     this.onLoading = options.onLoading || (() => {});
     this.onSuccess = options.onSuccess || (() => {});
     this.onError = options.onError || ((err) => console.error('渲染失败:', err));
