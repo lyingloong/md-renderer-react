@@ -162,7 +162,7 @@ export function ASTnode2DOM_React(ASTnode, styles = {}) {
         </React.Fragment>
       ));
     } else if (typeof content === 'string') {
-      return <PlainText text={content} style={styles} />;
+      return <PlainText text={content} styles={styles} />;
     } else if (typeof content == 'object' && content !== null) {
       return <React.Fragment>{ASTnode2DOM_React(content, styles)}</React.Fragment>;
     }
@@ -211,7 +211,7 @@ export function ASTnode2DOM_React(ASTnode, styles = {}) {
     case "figure":
       return (
         <Figure 
-          caption={ASTnode.caption.content} 
+          caption={ASTnode2DOM_React(ASTnode.caption, styles)} 
           path={ASTnode.path} 
           styles={styles}
         />
@@ -277,6 +277,7 @@ export function ASTnode2DOM_React(ASTnode, styles = {}) {
       
     default:
       console.warn(`未知的AST节点类型: ${ASTnode.type}`);
+      console.log(ASTnode);
       return null;
   }
 }
