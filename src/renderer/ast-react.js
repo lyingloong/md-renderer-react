@@ -153,7 +153,6 @@ const Section = ({ title, content, time, styles }) => (
 
 export function ASTnode2DOM_React(ASTnode, styles = {}) {
   if (!ASTnode) return null;
-  console.log("[ASTnode2DOM_React] styles:", styles);
 
   const renderContent = (content) => {
     if (Array.isArray(content)) {
@@ -172,7 +171,6 @@ export function ASTnode2DOM_React(ASTnode, styles = {}) {
 
   switch (ASTnode.type) {
     case "section":
-      console.log("[ASTnode2DOM_React] styles.section:", styles.section);
       return (
         <Section 
           title={renderContent(ASTnode.title)} 

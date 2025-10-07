@@ -21,8 +21,8 @@ function parseInline(text) {
       // !\[([^\]]*)\]\(([^)]+)\)
       out.push({
         type: 'figure',
-        path: m[2],
-        caption: { type: 'plain', content: m[1] || '' }
+        path: parseInline(m[2]),
+        caption: { type: 'plain', content: m[1] ? phaseInline(m[1]) : '' }
       });
     } else if (m[3] !== undefined) {
       // link
