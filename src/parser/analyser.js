@@ -22,10 +22,9 @@ function parseInline(text) {
       out.push({
         type: 'figure',
         path: m[2],
-        // tmporary fix: process caption for simple bold/plain
         caption: { 
-          type: /\^.+\^/.test(m[1]) ? 'bold':'plain', 
-          content: /\^.+\^/.test(m[1]) ? m[1].slice(1, -1) : m[1] 
+          type: 'paragraph', 
+          content: parseInline(m[1])
         }
       });
     } else if (m[3] !== undefined) {
