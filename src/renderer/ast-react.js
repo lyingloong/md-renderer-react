@@ -3,11 +3,11 @@ import hljs from 'highlight.js';
 import katex from 'katex';
 
 let idCounterSection = 0;
-let idCounterUl = 0;
+let idCounterLi = 0;
 const generateUniqueId = (prefix = 'section') => {
   if (prefix === 'section') idCounterSection += 1;
-  if (prefix === 'ul') idCounterUl += 1;
-  const id = prefix === 'section' ? idCounterSection : idCounterUl;
+  if (prefix === 'li') idCounterLi += 1;
+  const id = prefix === 'section' ? idCounterSection : idCounterLi;
   return `${prefix}-${id}`;
 };
 
@@ -132,16 +132,18 @@ const Link = ({ text, src, styles }) => (
 
 const List = ({ type, content, styles }) => {
   const Tag = type === 'itemization' ? 'ul' : 'ol';
-  const id = type === 'itemization' ? generateUniqueId('ul') : null;
-  return <Tag id={id} className={styles[type] ?? type}>{content}</Tag>;
+  return <Tag className={styles[type] ?? type}>{content}</Tag>;
 };
 
-const NormalItem = ({ title, content, styles }) => (
-  <li>
-    <p className={styles.item ?? 'item'}>{title}</p>
-    <div className={styles.item ?? 'item'}>{content}</div>
-  </li>
-);
+const NormalItem = ({ title, content, styles }) => {
+  const id = generateUniqueId('li');
+  return (
+    <li id={id}>
+      <p className={styles.item ?? 'item'}>{title}</p>
+      <div className={styles.item ?? 'item'}>{content}</div>
+    </li>
+  );
+};
 
 const PlainItem = ({ content, styles }) => (
   <li className={styles.plain ?? 'plain'}>
@@ -280,13 +282,13 @@ export function ASTnode2DOM_React(ASTnode, styles = {}) {
     case "plain":
       return <PlainText text={ASTnode.content} styles={styles} />;
 
-    case "plain-item":
-      return (
-        <PlainItem 
-          content={renderContent(ASTnode.content)} 
-          styles={styles}
-        />
-      );
+    // case "plain-item":
+    //   return (
+    //     <PlainItem 
+    //       content={renderContent(ASTnode.content)} 
+    //       styles={styles}
+    //     />
+    //   );
       
     default:
       console.warn(`未知的AST节点类型: ${ASTnode.type}`);
