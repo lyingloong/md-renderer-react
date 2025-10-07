@@ -121,7 +121,7 @@ const Figure = ({ caption, path, styles }) => (
 
 const Link = ({ text, src, styles }) => (
   <a
-    className={styles.md ?? 'md'}
+    className={styles.link ?? 'link'}
     href={src}
     target="_blank"
     rel="noopener noreferrer"
